@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sections</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet"> <!-- for icons -->
+    <style>
+        .dashboard {
+            margin-top: 20px;
+            background-color: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.25rem;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Adds shadow for depth */
+        }
+        .dashboard h3 {
+            color: #007bff; /* Bootstrap primary color */
+            padding-bottom: 10px;
+            border-bottom: 1px solid #dee2e6;
+            margin-bottom: 20px;
+        }
+        .dashboard p {
+            font-size: 18px;
+            color: #343a40; /* Bootstrap dark */
+            margin-bottom: 10px; /* Adds spacing between lines */
+        }
+        .dashboard .value {
+            font-weight: bold; /* Makes the number bold */
+            color: #28a745; /* Bootstrap success color */
+        }
+        .dashboard .icon {
+            color: #17a2b8; /* Bootstrap info color */
+            margin-right: 5px;
+        }
+    </style>
+    <script>
+        function extendAccess(bookId) {
+            var days = prompt("Enter the number of days you want to extend access for:", "1");
+            if (days != null) {
+                fetch(`/extend_access/${bookId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({days: days}),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    location.reload(); // Reload the page to update the info
+                })
+                .catch((error) => {
+                    console.error('Error:', error);
+                });
+            }
+        }
+        function returnBook(bookId) {
+    if (confirm("Are you sure you want to return this book?")) {
+        fetch(`/return_book/${bookId}`, {
+            method: 'POST',
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to return book');
+            }
+            location.reload(); // Reload the page to update the info
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    }
+}
+    </script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="#">Library Management</a>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/user_home">Home <span class="sr-only">(current)</span></a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" href="/login">Logout <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+<div class="container">
+    <div class="dashboard">
+        <h3><i class="fas fa-wallet icon"></i>My Dashboard</h3>
+        <p><i class="fas fa-balance-scale-right icon"></i>Existing Balance: <span class="value">₹{{"%.2f"|format(existing_balance) }}</span></p>
+        <p><i class="fas fa-shopping-cart icon"></i>Total Current Order Value: <span class="value">₹{{"%.2f"|format(total_current_order_value) }}</span></p>
+        <p><i class="fas fa-calculator icon"></i>Actual Balance: <span class="value">₹{{"%.2f"|format(actual_balance) }}</span></p>
+    </div>
+    <h2>Your Borrowed Books</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Book ID</th>
+                <th>Book Name</th>
+                <th>Borrowed Date</th>
+                <th>Access End Date</th>
+                <th>Current Order Value</th>
+                <th>Actions</th>
+                <th>View Book PDF</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for borrowed_book in approved_books %}
+            <tr>
+                <td>{{ borrowed_book.book_id }}</td>
+                <td>{{ borrowed_book.book_name }}</td>
+                <td>{{ borrowed_book.borrowed_date.strftime('%Y-%m-%d') }}</td>
+                <td>{{ borrowed_book.access_end_date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    {% if borrowed_book.current_order_value %}
+                        ₹{{ "%.2f"|format(borrowed_book.current_order_value) }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
+                
+                <td>
+                    <button onclick="returnBook({{ borrowed_book.book_id }})">Return Book</button>
+                    <button onclick="extendAccess({{ borrowed_book.book_id }})">Extend Access</button>
+                </td>
+                <td>
+                    <a href="https://drive.google.com/file/d/1pk8Vo29LdrCB_Qv1LuaWK_2T4GKv6Luy/view?usp=sharing" target="_blank" class="btn">View PDF</a>
+                </td>                
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="3">No books in your borrowed books sections.</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <h3>Waiting for Approval</h3>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Book ID</th>
+                <th>Book Name</th>
+                <th>Borrowed Date</th>
+                <th>Access End Date</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for borrowed_book in waiting_approval_books %}
+        <tr>
+            <td>{{ borrowed_book.book_id }}</td>
+            <td>{{ borrowed_book.book_name }}</td>
+            <td>{{ borrowed_book.borrowed_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ borrowed_book.access_end_date.strftime('%Y-%m-%d') }}</td>
+        </tr>
+        {% else %}
+            <tr><td colspan="4">No books waiting for approval.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    <a href="/past_orders" class="btn btn-primary">View Past Orders & Give Feedback</a>
+</div>
+</body>
+</html>

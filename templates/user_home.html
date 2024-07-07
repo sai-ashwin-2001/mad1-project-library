@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <style>
+        .section-header {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .section-header:hover {
+            background-color: #0056b3;
+        }
+        .section-content {
+            display: none;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand" href="#">Library Management</a>
+    </div>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item active">
+                <a class="nav-link" href="/borrowed_books">My Profile <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link" href="/login">Logout <span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <!-- <a href="/borrowed_books" class="btn btn-info">View Borrowed Books</a> -->
+        <a href="/user_home_1" class="btn btn-secondary">Search Books</a>
+    </div>
+
+    <div class="filter-section mb-3">
+        <form action="/user_home" method="get">
+            <div class="form-group">
+                <label for="filter-select">Filter by:</label>
+                <select id="filter-select" name="filter" class="form-control" onchange="this.form.submit()">
+                    <option value="author" {% if filter_name == 'Author' %}selected{% endif %}>Author</option>
+                    <option value="section" {% if filter_name == 'section' %}selected{% endif %}>section</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- <h2>Books by {{ filter_name }}</h2>
+    {% for group in filter_groups %}
+        <h3>{{ group.name }}</h3>
+        <table class="table table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Book Name</th>
+                    <th>{% if filter_name == 'Author' %}section{% else %}Author{% endif %}</th>
+                    <th>Price</th>
+                    <th>Rating</th>
+                    <th>Popularity</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in group.books %}
+                    <tr>
+                        <td>{{ book.book_name }}</td>
+                        <td>{% if filter_name == 'Author' %}{{ book.section }}{% else %}{{ book.author_name }}{% endif %}</td>
+                        <td>₹{{'%.2f' | format(book.price) }}</td>
+                       
+                        <td>
+                            {% if book.rating_count > 0 %}
+                                {{ book.avg_rating }} ({{ book.rating_count }} reviews)
+                            {% else %}
+                                {{ book.rating }}
+                            {% endif %}
+                        </td>
+                        <td>{{ book.popularity }}</td>
+                        <td>
+                            <button class="btn btn-primary borrow-btn" data-book-id="{{ book.book_id }}">Borrow</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No results found.</p>
+    {% endfor %}
+</div> -->
+<h2>Books by {{ filter_name }}</h2>
+    {% for group in filter_groups %}
+        <div class="section">
+            <div class="section-header">
+                <span>{{ group.name }}</span>
+                <span class="dropdown-arrow">&#9660;</span>
+            </div>
+            <div class="section-content">
+                <table class="table table-striped">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Book Name</th>
+                            <th>{% if filter_name == 'Author' %}Section{% else %}Author{% endif %}</th>
+                            <th>Price</th>
+                            <th>Rating</th>
+                            <th>Popularity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for book in group.books %}
+                            <tr>
+                                <td>{{ book.book_name }}</td>
+                                <td>{% if filter_name == 'Author' %}{{ book.section }}{% else %}{{ book.author_name }}{% endif %}</td>
+                                <td>₹{{'%.2f' | format(book.price) }}</td>
+                                <td>
+                                    {% if book.rating_count > 0 %}
+                                        {{ book.avg_rating }} ({{ book.rating_count }} reviews)
+                                    {% else %}
+                                        {{ book.rating }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ book.popularity }}</td>
+                                <td>
+                                    <button class="btn btn-primary borrow-btn" data-book-id="{{ book.book_id }}">Borrow</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% else %}
+        <p>No results found.</p>
+    {% endfor %}
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        document.querySelectorAll('.borrow-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                var bookId = this.getAttribute('data-book-id');
+                borrowBook(bookId);
+            });
+        });
+    });
+    $(document).ready(function(){
+    $('.section-header').click(function(){
+        $(this).next('.section-content').slideToggle();
+        $(this).find('.dropdown-arrow').toggleClass('collapsed');
+    });
+});
+    // document.addEventListener('DOMContentLoaded', (event) => {
+    //     $('.section-header').click(function(){
+    //         $(this).next('.section-content').slideToggle();
+    //         $(this).find('.dropdown-arrow').toggleClass('collapsed');
+    //     });
+    // });
+    function borrowBook(bookId) {
+        var days = prompt("Please enter the number of days you want to borrow this book:", "1");
+        if (days !== null && !isNaN(days) && parseInt(days) > 0) {
+            fetch('/borrow_book/' + bookId, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({'days': parseInt(days)}),
+                credentials: 'include'
+            }).then(response => response.json())
+              .then(data => {
+                  if (data.message) {
+                      alert(data.message);
+                      location.reload();
+                  } else if (data.error) {
+                      alert(data.error);
+                  }
+              }).catch(error => {
+                  console.error('Error:', error);
+                  alert('Failed to borrow book. Please try again.');
+              });
+        } else {
+            alert('Please enter a valid number of days.');
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Book</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Add Book</h2>
+        <form method="post">
+            <div class="form-group">
+                <label for="book_name">Book Name</label>
+                <input type="text" class="form-control" id="book_name" name="book_name">
+            </div>
+            <!-- <div class="form-group">
+                <label for="author">Author</label>
+                <input type="text" class="form-control" id="author" name="author">
+            </div> -->
+            <div class="form-group">
+                <label for="author">Author</label>
+                <select class="form-control" id="author_select" name="author_select">
+                    <option value="">Select Existing Author</option>
+                    {% for author in authors %}
+                        <option value="{{ author.name }}">{{ author.name }}</option>
+                    {% endfor %}
+                </select>
+                or
+                <input type="text" class="form-control" id="author" name="author" placeholder="Enter new author" oninput="disableAuthorSelect()">
+            </div>
+            <script>
+                function disableAuthorSelect() {
+                    var authorInput = document.getElementById('author');
+                    var authorSelect = document.getElementById('author_select');
+                    if (authorInput.value.trim() !== "") {
+                        authorSelect.disabled = true;
+                    } else {
+                        authorSelect.disabled = false;
+                    }
+                }
+            </script>
+            <div class="form-group">
+                <label for="section">Section</label>
+                <select class="form-control" id="section" name="section">
+                    {% for section in sections %}
+                        <option value="{{ section.section_name }}">{{ section.section_name }}</option>
+                    {% endfor %}
+                </select>
+                
+            </div>
+            
+            <div class="form-group">
+                <label for="price">Price</label>
+                <input type="text" class="form-control" id="price" name="price">
+            </div>
+            <!-- <div class="form-group">
+                <label for="author_id">Author ID</label>
+                <input type="number" class="form-control" id="author_id" name="author_id">
+            </div> -->
+            <button type="submit" class="btn btn-primary">Add Book</button>
+        </form>
+        <a href="/admin_home" class="btn btn-secondary mt-3">Back to Book List</a>
+    </div>
+</body>
+</html>

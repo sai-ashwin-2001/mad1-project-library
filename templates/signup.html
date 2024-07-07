@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .toggle-button {
+            margin: 0 10px;
+            cursor: pointer;
+        }
+        .active {
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Signup</h2>
+    <form method="POST">
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="name">Username:</label>
+            <input type="text" class="form-control" id="name" name="name" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div class="form-group toggle-group">
+            <span class="toggle-button active" id="user-btn">User</span>
+            <span class="toggle-button" id="admin-btn">Admin</span>
+            <input type="hidden" name="role" id="role" value="user">
+        </div>
+        <button type="submit" class="btn btn-primary">Signup</button>
+        <!-- Inside signup.html, add below the signup form -->
+        <div class="mt-4">
+            Already have an account? <a href="/login" class="btn btn-secondary">Login</a>
+        </div>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('.toggle-button').click(function() {
+        $('.toggle-button').removeClass('active');
+        $(this).addClass('active');
+        $('#role').val($(this).text().toLowerCase());
+    });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Home</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function confirmDelete(bookId) {
+            const confirmation = confirm("Are you sure you want to delete this book?");
+            if (confirmation) {
+                document.getElementById('deleteForm-' + bookId).submit();
+            }
+        }
+    </script>
+    <style>
+        .section-header {
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            font-family: Arial, sans-serif;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+        .section-header:hover {
+            background-color: #0056b3;
+        }
+        .section-actions {
+            float: right;
+        }
+        .section-content {
+            display: none;
+            padding: 10px;
+            border: 1px solid #007bff;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <a class="navbar-brand" href="#">Library Management</a>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/add_book">Add New Book <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/statistics">Library Statistics <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+            <ul class="navbar-nav">
+                <li class="nav-item active">
+                    <a class="nav-link" href="/login">Logout <span class="sr-only">(current)</span></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h3>Borrowed Books</h3>
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">User Name</th>
+                    <th scope="col">Book Name</th>
+                    <th scope="col">Borrowed Date</th>
+                    <th scope="col">Access End Date</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+    {% for book in borrowed %}
+<tr>
+    <td>{{ book.username }}</td>
+    <td>{{ book.book_name }}</td>
+    <td>{{ book.borrowed_date.strftime('%Y-%m-%d') }}</td>
+    <td>{{ book.access_end_date.strftime('%Y-%m-%d') }}</td>
+    <td>
+        <form action="/admin_home/revoke" method="post">
+            <input type="hidden" name="book_id" value="{{ book.book_id }}">
+            <input type="hidden" name="user_id" value="{{ book.id }}">
+            <button type="submit">Revoke Access</button>
+        </form>
+    </td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<h3>To Be Approved Books</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>User Name</th>
+            <th>Book Name</th>
+            <th>Borrowed Date</th>
+            <th>Access End Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for book in to_be_approved %}
+        <tr>
+            <td>{{ book.id }}</td>
+            <td>{{ book.username }}</td>
+            <td>{{ book.book_name }}</td>
+            <td>{{ book.borrowed_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ book.access_end_date.strftime('%Y-%m-%d') }}</td>
+            <td>
+                <form action="/admin_home/approve" method="post" style="display: inline-block;">
+                    <input type="hidden" name="book_id" value="{{ book.book_id }}">
+                    <input type="hidden" name="user_id" value="{{ book.id }}">
+                    <button type="submit" class="btn btn-success">Approve</button>
+                </form>
+                <form action="/admin_home/deny" method="post" style="display: inline-block;">
+                    <input type="hidden" name="book_id" value="{{ book.book_id }}">
+                    <input type="hidden" name="user_id" value="{{ book.id }}">
+                    <button type="submit" class="btn btn-danger">Deny</button>
+                </form>
+            </td>
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="6">No books waiting for approval.</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<div class="container mt-4">
+    <h2>Book List by Section</h2>
+    {% for section, books in section_books.items() %}
+    <div class="section">
+        <div class="section-header">
+            <span>{{ section }}</span>
+            <span class="dropdown-arrow">&#9660;</span>
+            <div class="section-actions">
+                <a href="/update_section/{{ section }}" class="btn btn-sm btn-light">Update</a>
+                <form action="/delete_section/{{ section}}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this section and all its books?');">
+                    <button type="submit" class="btn btn-sm btn-light">Delete</button>
+                </form>
+            </div>
+        </div>
+        <div class="section-content">
+            <table class="table">
+                <thead class="thead-light">
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Book Name</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <th scope="row">{{ loop.index }}</th>
+                        <td>{{ book.book_name }}</td>
+                        <td>
+                            <a href="/update_book/{{ book.book_id }}" class="btn btn-sm btn-secondary">Update</a>
+                            <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete({{ book.book_id }})">Delete</button>
+                            <form id="deleteForm-{{ book.book_id }}" action="/delete_book/{{ book.book_id }}" method="post" style="display:none;"></form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+    <a href="/add_section" class="btn btn-sm btn-primary">Add Section</a>
+</div>
+<script>
+    $(document).ready(function(){
+        $('.section-header').click(function(){
+            $(this).next('.section-content').slideToggle();
+            $(this).find('.dropdown-arrow').toggleClass('collapsed');
+        });
+    });
+</script>
+</body>
+</html>
+    <!-- <div class="container mt-4">
+        <h2>Book List</h2>
+        <table class="table">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Book Name</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <th scope="row">{{ loop.index }}</th>
+                    <td>{{ book.book_name }}</td>
+                    <td>
+                        <a href="/update_book/{{ book.book_id }}" class="btn btn-sm btn-secondary">Update</a>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDelete({{ book.book_id }})">Delete</button>
+                        <form id="deleteForm-{{ book.book_id }}" action="/delete_book/{{ book.book_id }}" method="post" style="display:none;"></form>
+                    </td>
+                </tr>
+                {% endfor %}
+
+            </tbody>
+        </table>
+    </div> -->
+
+
